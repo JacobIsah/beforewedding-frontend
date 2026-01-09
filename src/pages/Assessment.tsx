@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { AssessmentCompletionModal } from '../components/AssessmentCompletionModal';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://3.107.197.17/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://3.107.197.17/api';
 
 interface AssessmentProps {
   categoryId: string;

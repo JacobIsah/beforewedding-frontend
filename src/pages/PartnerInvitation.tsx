@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Heart, Users, Send, Mail, Copy, CheckCircle, Sparkles, AlertCircle } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://3.107.197.17';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://3.107.197.17';
 
 interface PartnerInvitationProps {
   userName: string;

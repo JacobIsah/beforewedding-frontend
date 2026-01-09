@@ -4,7 +4,7 @@ import { Heart, Star, MapPin, Calendar, Award, ArrowRight, ChevronLeft, ChevronR
 import { Navigation } from '../components/Navigation';
 import { Footer } from '../components/Footer';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://3.107.197.17/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://3.107.197.17/api';
 
 // API Response Types
 interface ApiCounselor {

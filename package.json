@@ -54,6 +54,8 @@
       },
       "scripts": {
             "dev": "vite",
-            "build": "vite build"
+            "build": "vite build",
+            "deploy": "npm run build && firebase deploy --only hosting",
+            "deploy:prod": "npm run build && firebase deploy --only hosting --project beforewedding-courtship"
       }
 }

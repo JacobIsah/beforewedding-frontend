@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, ArrowLeft, Calendar, Clock, Video, MessageCircle, CheckCircle, XCircle, AlertCircle, Users, User, Loader2 } from 'lucide-react';
 import { CounselorCalendar } from '../components/CounselorCalendar';
 
-const API_BASE_URL = 'http://3.107.197.17';
+const API_BASE_URL = 'https://3.107.197.17';
 
 type SessionType = 'video' | 'in-person';
 type SessionDuration = '50' | '80';

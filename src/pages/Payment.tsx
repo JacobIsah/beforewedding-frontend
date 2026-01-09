@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Heart, ArrowLeft, CreditCard, Lock, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 
-const API_BASE_URL = 'http://3.107.197.17';
+const API_BASE_URL = 'https://3.107.197.17';
 
 interface LocationState {
   bookingId: number;

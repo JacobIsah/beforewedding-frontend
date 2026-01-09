@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Lock, AlertCircle, Loader2 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://3.107.197.17';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://3.107.197.17';
 
 export function AdminLogin() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export function AdminLogin() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://3.107.197.17/api/auth/login/', {
+      const response = await fetch('https://3.107.197.17/api/auth/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,0 +1,4 @@
+Add these scripts to your package.json "scripts" section:
+
+"deploy": "npm run build && firebase deploy --only hosting",
+"deploy:prod": "npm run build && firebase deploy --only hosting --project beforewedding-courtship"

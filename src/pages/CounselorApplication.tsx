@@ -163,7 +163,7 @@ export function CounselorApplication() {
         termsAgreed: formData.termsAgreed
       };
 
-      const response = await fetch('http://3.107.197.17/api/auth/counselor/register/', {
+      const response = await fetch('https://3.107.197.17/api/auth/counselor/register/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

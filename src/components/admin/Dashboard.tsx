@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, UserCheck, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, Loader2, AlertCircle } from 'lucide-react';
 
-const API_BASE_URL = 'http://3.107.197.17';
+const API_BASE_URL = 'https://3.107.197.17';
 
 interface DashboardStats {
   total_users: number;

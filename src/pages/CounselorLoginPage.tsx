@@ -27,7 +27,7 @@ export function LoginPage() {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://3.107.197.17/api/auth/counselor/login/', {
+      const response = await fetch('https://3.107.197.17/api/auth/counselor/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

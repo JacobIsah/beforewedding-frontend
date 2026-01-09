@@ -110,7 +110,7 @@ The project includes automated deployment via [`.github/workflows/firebase-deplo
    
 2. `FIREBASE_PROJECT_ID` - Your Firebase project ID (e.g., `duringcourtship-prod`)
 
-3. `VITE_API_BASE_URL` - Backend API URL (e.g., `http://3.107.197.17/api`)
+3. `VITE_API_BASE_URL` - Backend API URL (e.g., `https://3.107.197.17/api`)
 
 **Workflow Behavior:**
 - **Pull Requests**: Creates preview deployment (expires in 7 days)
@@ -144,13 +144,13 @@ const upcomingAppointments = [
 ### API Integration
 **Backend Deployment:**
 - **Development**: `http://localhost:8000` (local backend)
-- **Production**: `http://3.107.197.17/api` (AWS deployed)
+- **Production**: `https://3.107.197.17/api` (AWS deployed)
 
 Backend URL resolution from env: `import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'`
 
 To connect to deployed backend, set environment variable:
 ```bash
-VITE_API_BASE_URL=http://3.107.197.17/api npm run dev
+VITE_API_BASE_URL=https://3.107.197.17/api npm run dev
 ```
 
 **Authentication Token Management:**

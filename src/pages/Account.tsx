@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, Calendar, Lock, Camera, Save, X, Loader2, AlertCircle } from 'lucide-react';
 import { SuccessNotification } from '../components/SuccessNotification';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://3.107.197.17/api';
 
 interface UserProfile {
   phone_number: string | null;

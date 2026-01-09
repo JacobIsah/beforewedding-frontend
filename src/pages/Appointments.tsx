@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DashboardSidebar } from '../components/DashboardSidebar';
 import { Calendar, Video, MapPin, Clock, User, Phone, CheckCircle, X as XIcon, Filter, Loader2, AlertCircle } from 'lucide-react';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://3.107.197.17/api';
 
 type AppointmentStatus = 'upcoming' | 'completed' | 'cancelled';
 

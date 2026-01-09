@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, Check, X, Eye, MoreVertical, Star, Loader2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const API_BASE_URL = 'https://3.107.197.17';
+const API_BASE_URL = 'http://3.107.197.17';
 
 interface CounselorApplication {
   id: number;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, MoreVertical, Ban, CheckCircle, Mail, Loader2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const API_BASE_URL = 'https://3.107.197.17';
+const API_BASE_URL = 'http://3.107.197.17';
 
 interface User {
   id: number;

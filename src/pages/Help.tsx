@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { HelpCircle, Send, CheckCircle, BookOpen, MessageSquare, Phone, Mail, Loader2, AlertCircle } from 'lucide-react';
 
 const ADMIN_EMAIL = 'support@duringcourtship.com';
-const API_BASE_URL = 'https://3.107.197.17';
+const API_BASE_URL = 'http://3.107.197.17';
 
 interface UserData {
   id: number;
@@ -109,7 +109,7 @@ export function Help() {
         return;
       }
 
-      const response = await fetch('https://3.107.197.17/api/support/contact/', {
+      const response = await fetch('http://3.107.197.17/api/support/contact/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

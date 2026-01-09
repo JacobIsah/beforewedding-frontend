@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Heart, CheckCircle, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://3.107.197.17/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://3.107.197.17/api';
 
 export function EmailVerification() {
   const navigate = useNavigate();

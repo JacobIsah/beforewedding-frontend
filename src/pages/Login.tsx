@@ -26,7 +26,7 @@ export function Login() {
     setError(null);
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://3.107.197.17/api'}/auth/login/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://3.107.197.17/api'}/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

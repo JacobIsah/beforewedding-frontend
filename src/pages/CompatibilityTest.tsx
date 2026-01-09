@@ -2,7 +2,7 @@ import { FileText, Library, AlertCircle, CheckCircle, Clock, Loader2 } from 'luc
 import { useState, useEffect } from 'react';
 import { ViewResultModal } from '../components/ViewResultModal';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://3.107.197.17/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://3.107.197.17/api';
 
 interface CompatibilityTestProps {
   currentPage: string;

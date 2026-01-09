@@ -63,7 +63,7 @@ export function AdminRegistration() {
     setIsLoading(true);
     
     try {
-      const response = await fetch('https://3.107.197.17/api/auth/admin/create-super-admin/', {
+      const response = await fetch('http://3.107.197.17/api/auth/admin/create-super-admin/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ export function AdminRegistration() {
         return;
       }
 
-      const response = await fetch('https://3.107.197.17/api/auth/admin/create/', {
+      const response = await fetch('http://3.107.197.17/api/auth/admin/create/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

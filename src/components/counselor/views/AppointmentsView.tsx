@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, Filter, Calendar, Clock, Video, MessageSquare, MoreVertical, Download, Loader2, CheckCircle, XCircle } from "lucide-react";
 
-const API_BASE_URL = 'https://3.107.197.17';
+const API_BASE_URL = 'http://3.107.197.17';
 
 interface Appointment {
   id: string;

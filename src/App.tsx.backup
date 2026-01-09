@@ -1,0 +1,863 @@
+import { useState, useEffect } from 'react';
+import { Home } from './pages/Home';
+import { Login } from './pages/Login';
+import { Signup } from './pages/Signup';
+import { Counselors } from './pages/Counselors';
+import { Insights } from './pages/Insights';
+import { CounselorProfile } from './pages/CounselorProfile';
+import { BookingPage } from './pages/BookingPage';
+import { CounselorApplication } from './pages/CounselorApplication';
+import { LoginPage as CounselorLoginPage } from './pages/CounselorLoginPage';
+import { BlogPost } from './pages/BlogPost';
+import CounselorDashboard from './pages/CounselorDashboard';
+import { EmailVerification } from './pages/EmailVerification';
+import { EmailVerificationResult } from './pages/EmailVerificationResult';
+import { AcceptInvitation } from './pages/AcceptInvitation';
+import { PartnerInvitation } from './pages/PartnerInvitation';
+import { Dashboard } from './pages/Dashboard';
+import { CounselorsMarketplace } from './pages/CounselorsMarketplace';
+import { RecommendedMaterials } from './pages/RecommendedMaterials';
+import { MaterialView } from './pages/MaterialView';
+import { CompatibilityTest } from './pages/CompatibilityTest';
+import { Notifications } from './pages/Notifications';
+import { Account } from './pages/Account';
+import { Help } from './pages/Help';
+import { Assessment } from './pages/Assessment';
+import { DemoModal } from './components/DemoModal';
+import { Payment } from './pages/Payment';
+
+type Page = 
+  | 'home' 
+  | 'login' 
+  | 'signup' 
+  | 'email-verification'
+  | 'email-verification-result'
+  | 'accept-invitation'
+  | 'partner-invitation'
+  | 'dashboard'
+  | 'counselors-marketplace'
+  | 'recommended-materials'
+  | 'material-view'
+  | 'compatibility-test'
+  | 'assessment'
+  | 'notifications'
+  | 'account'
+  | 'help'
+  | 'counselors' 
+  | 'insights' 
+  | 'counselor-profile' 
+  | 'booking'
+  | 'payment'
+  | 'counselor-application'
+  | 'counselor-login'
+  | 'counselor-dashboard'
+  | 'blog-post';
+
+interface PageState {
+  currentPage: Page;
+  selectedCounselorId: number | null;
+  selectedCounselorName: string;
+  selectedBlogPostId: number | null;
+  selectedMaterialId: number | null;
+  selectedCategory: string | undefined;
+  selectedAssessmentId?: string;
+  selectedAssessmentCategory?: string;
+  selectedAssessmentColor?: string;
+  selectedAssessmentPartnerCompleted?: boolean;
+  bookingData?: {
+    appointmentType: 'single' | 'couple';
+    sessionType: 'video' | 'in-person';
+    sessionDuration: '50' | '80';
+    preferredDate: string;
+    preferredTime: string;
+  };
+  userEmail: string;
+  userName: string;
+  partnerInviteCode?: string;
+  hasPartner: boolean;
+  partnerName?: string;
+  verificationToken?: string;
+  verificationStatus?: 'pending' | 'success' | 'error';
+  verificationMessage?: string;
+  invitationToken?: string;
+  invitationStatus?: 'pending' | 'success' | 'error';
+  invitationMessage?: string;
+}
+
+export default function App() {
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
+  // Check localStorage for existing token on initial load
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const token = localStorage.getItem('access_token');
+    return !!token;
+  });
+  const [pageState, setPageState] = useState<PageState>(() => {
+    const token = localStorage.getItem('access_token');
+    
+    // Check for verification token in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const verificationToken = urlParams.get('token');
+    const path = window.location.pathname;
+    
+    // If there's a verification token in the URL, show verification result page
+    if (path.includes('verify-email') && verificationToken) {
+      return {
+        currentPage: 'email-verification-result',
+        selectedCounselorId: null,
+        selectedCounselorName: '',
+        selectedBlogPostId: null,
+        selectedMaterialId: null,
+        selectedCategory: undefined,
+        userEmail: '',
+        userName: '',
+        hasPartner: false,
+        verificationToken,
+        verificationStatus: 'pending'
+      };
+    }
+
+    // If there's an invitation token in the URL, show invitation acceptance page
+    if (path.includes('accept-invitation') && verificationToken) {
+      return {
+        currentPage: 'accept-invitation',
+        selectedCounselorId: null,
+        selectedCounselorName: '',
+        selectedBlogPostId: null,
+        selectedMaterialId: null,
+        selectedCategory: undefined,
+        userEmail: '',
+        userName: '',
+        hasPartner: false,
+        invitationToken: verificationToken,
+        invitationStatus: 'pending'
+      };
+    }
+    
+    return {
+      currentPage: token ? 'dashboard' : 'home',
+      selectedCounselorId: null,
+      selectedCounselorName: '',
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined,
+      userEmail: '',
+      userName: '',
+      hasPartner: false
+    };
+  });
+
+  // Handle email verification when token is in URL
+  useEffect(() => {
+    const verifyEmailToken = async () => {
+      if (pageState.currentPage === 'email-verification-result' && pageState.verificationToken && pageState.verificationStatus === 'pending') {
+        try {
+          const response = await fetch('http://127.0.0.1:8000/api/auth/verify-email/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ token: pageState.verificationToken }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            setPageState(prev => ({
+              ...prev,
+              verificationStatus: 'success',
+              verificationMessage: data.message || 'Email verified successfully!'
+            }));
+            // Clear the URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname.split('?')[0] || '/');
+          } else {
+            setPageState(prev => ({
+              ...prev,
+              verificationStatus: 'error',
+              verificationMessage: data.error || data.message || 'Verification failed. The link may have expired.'
+            }));
+          }
+        } catch {
+          setPageState(prev => ({
+            ...prev,
+            verificationStatus: 'error',
+            verificationMessage: 'Network error. Please try again.'
+          }));
+        }
+      }
+    };
+
+    verifyEmailToken();
+  }, [pageState.currentPage, pageState.verificationToken, pageState.verificationStatus]);
+
+  // Note: Invitation acceptance requires authentication
+  // The user will be redirected to signup/login first, then the invitation will be accepted
+  // after they authenticate (handled in handleLoginSuccess)
+
+  // Verify token is still valid on mount
+  useEffect(() => {
+    const verifyToken = async () => {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        try {
+          const response = await fetch('http://127.0.0.1:8000/api/auth/me/', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          if (!response.ok) {
+            // Token is invalid, clear it and redirect to home
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            setIsAuthenticated(false);
+            setPageState(prev => ({ ...prev, currentPage: 'home' }));
+          }
+        } catch {
+          // Network error, keep user logged in (they might be offline)
+        }
+      }
+    };
+    verifyToken();
+  }, []);
+
+  // Navigation handlers
+  const navigateToHome = () => {
+    setPageState(prev => ({ 
+      ...prev,
+      currentPage: 'home', 
+      selectedCounselorId: null, 
+      selectedCounselorName: '', 
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined
+    }));
+  };
+
+  const navigateToLogin = () => {
+    setPageState(prev => ({ 
+      ...prev,
+      currentPage: 'login', 
+      selectedCounselorId: null, 
+      selectedCounselorName: '', 
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined
+    }));
+  };
+
+  const navigateToSignup = (partnerCode?: string) => {
+    setPageState(prev => ({ 
+      ...prev,
+      currentPage: 'signup', 
+      selectedCounselorId: null, 
+      selectedCounselorName: '', 
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined,
+      partnerInviteCode: partnerCode
+    }));
+  };
+
+  const navigateToCounselors = () => {
+    setPageState(prev => ({ 
+      ...prev,
+      currentPage: 'counselors', 
+      selectedCounselorId: null, 
+      selectedCounselorName: '', 
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined
+    }));
+  };
+
+  const navigateToInsights = () => {
+    setPageState(prev => ({ 
+      ...prev,
+      currentPage: 'insights', 
+      selectedCounselorId: null, 
+      selectedCounselorName: '', 
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined
+    }));
+  };
+
+  const navigateToDashboard = () => {
+    setPageState(prev => ({ 
+      ...prev,
+      currentPage: 'dashboard' 
+    }));
+    setIsAuthenticated(true);
+  };
+
+  const navigateToProfile = (counselorId: number) => {
+    const counselorNames: { [key: number]: string } = {
+      1: 'Dr. Sarah Johnson',
+      2: 'Rev. Michael Chen',
+      3: 'Dr. Emily Rodriguez',
+      4: 'Dr. James Williams',
+      5: 'Dr. Aisha Patel',
+      6: 'Robert Taylor'
+    };
+
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'counselor-profile',
+      selectedCounselorId: counselorId,
+      selectedCounselorName: counselorNames[counselorId] || 'Dr. Sarah Johnson',
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined
+    }));
+  };
+
+  const navigateToBooking = (counselorId: number) => {
+    if (!isAuthenticated) {
+      navigateToLogin();
+      return;
+    }
+
+    const counselorNames: { [key: number]: string } = {
+      1: 'Dr. Sarah Johnson',
+      2: 'Rev. Michael Chen',
+      3: 'Dr. Emily Rodriguez',
+      4: 'Dr. James Williams',
+      5: 'Dr. Aisha Patel',
+      6: 'Robert Taylor'
+    };
+
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'booking',
+      selectedCounselorId: counselorId,
+      selectedCounselorName: counselorNames[counselorId] || 'Dr. Sarah Johnson',
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined
+    }));
+  };
+
+  const navigateToApplication = () => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'counselor-application',
+      selectedCounselorId: null,
+      selectedCounselorName: '',
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined
+    }));
+  };
+
+  const navigateToCounselorLogin = () => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'counselor-login',
+      selectedCounselorId: null,
+      selectedCounselorName: '',
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined
+    }));
+  };
+
+  const navigateToCounselorDashboard = () => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'counselor-dashboard',
+      selectedCounselorId: null,
+      selectedCounselorName: '',
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined
+    }));
+  };
+
+  const navigateToAuth = () => {
+    navigateToSignup();
+  };
+
+  const navigateToBlogPost = (blogPostId: number) => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'blog-post',
+      selectedCounselorId: null,
+      selectedCounselorName: '',
+      selectedBlogPostId: blogPostId,
+      selectedMaterialId: null,
+      selectedCategory: undefined
+    }));
+  };
+
+  const navigateToMaterialView = (materialId: number) => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'material-view',
+      selectedCounselorId: null,
+      selectedCounselorName: '',
+      selectedBlogPostId: null,
+      selectedMaterialId: materialId,
+      selectedCategory: undefined
+    }));
+  };
+
+  const navigateToCompatibilityTest = () => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'compatibility-test'
+    }));
+  };
+
+  const navigateToNotifications = () => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'notifications'
+    }));
+  };
+
+  const navigateToAccount = () => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'account'
+    }));
+  };
+
+  const navigateToHelp = () => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'help'
+    }));
+  };
+
+  const navigateToAssessment = (categoryId: string, category: string, color: string, partnerCompleted: boolean = false) => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'assessment',
+      selectedAssessmentId: categoryId,
+      selectedAssessmentCategory: category,
+      selectedAssessmentColor: color,
+      selectedAssessmentPartnerCompleted: partnerCompleted
+    }));
+  };
+
+  const navigateToPayment = (bookingData: {
+    appointmentType: 'single' | 'couple';
+    sessionType: 'video' | 'in-person';
+    sessionDuration: '50' | '80';
+    preferredDate: string;
+    preferredTime: string;
+  }) => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'payment',
+      bookingData
+    }));
+  };
+
+  // Handle signup success - redirect to email verification
+  const handleSignupSuccess = (email: string, firstName: string) => {
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'email-verification',
+      userEmail: email,
+      userName: firstName
+    }));
+  };
+
+  // Handle email verification - redirect to partner invitation or accept pending invitation
+  const handleEmailVerified = async () => {
+    // Check if user signed up via partner invite
+    if (pageState.partnerInviteCode) {
+      // Accept the invitation
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch('http://127.0.0.1:8000/api/couples/respond/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+          },
+          body: JSON.stringify({ token: pageState.partnerInviteCode, accept: true }),
+        });
+        
+        const data = await response.json();
+        console.log('Invitation acceptance after email verification:', data);
+        
+        // Clear URL params
+        window.history.replaceState({}, document.title, '/');
+      } catch (err) {
+        console.error('Failed to accept invitation:', err);
+      }
+      
+      // Partner already connected, go to dashboard
+      setPageState(prev => ({
+        ...prev,
+        hasPartner: true,
+        currentPage: 'dashboard',
+        partnerInviteCode: undefined
+      }));
+      setIsAuthenticated(true);
+    } else {
+      // No partner yet, show invitation page
+      setPageState(prev => ({
+        ...prev,
+        currentPage: 'partner-invitation'
+      }));
+    }
+  };
+
+  // Handle partner invitation sent - redirect to dashboard
+  const handleInvitationSent = () => {
+    navigateToDashboard();
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    // Clear tokens from localStorage
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    
+    setIsAuthenticated(false);
+    setPageState({
+      currentPage: 'home',
+      selectedCounselorId: null,
+      selectedCounselorName: '',
+      selectedBlogPostId: null,
+      selectedMaterialId: null,
+      selectedCategory: undefined,
+      userEmail: '',
+      userName: '',
+      hasPartner: false
+    });
+  };
+
+  // Handle login success - redirect to dashboard and accept invitation if pending
+  const handleLoginSuccess = async (email: string) => {
+    // Extract name from email for demo purposes
+    const name = email.split('@')[0].split('.').map(part => 
+      part.charAt(0).toUpperCase() + part.slice(1)
+    ).join(' ');
+    
+    // If user came from invitation link, accept the invitation
+    if (pageState.partnerInviteCode) {
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch('http://127.0.0.1:8000/api/couples/respond/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+          },
+          body: JSON.stringify({ token: pageState.partnerInviteCode, accept: true }),
+        });
+        
+        const data = await response.json();
+        console.log('Invitation acceptance response:', data);
+        
+        if (response.ok) {
+          // Clear URL params
+          window.history.replaceState({}, document.title, '/');
+        }
+      } catch (err) {
+        console.error('Failed to accept invitation:', err);
+      }
+    }
+    
+    setPageState(prev => ({
+      ...prev,
+      currentPage: 'dashboard',
+      userEmail: email,
+      userName: name,
+      hasPartner: !!prev.partnerInviteCode, // Has partner if they came from invitation
+      partnerInviteCode: undefined // Clear the invite code
+    }));
+    setIsAuthenticated(true);
+  };
+
+  return (
+    <div className="min-h-screen">
+      {pageState.currentPage === 'home' && (
+        <Home 
+          onNavigateToLogin={navigateToLogin}
+          onNavigateToSignup={() => navigateToSignup()}
+          onNavigateToCounselors={navigateToCounselors}
+          onNavigateToInsights={navigateToInsights}
+          onOpenDemo={() => setIsDemoOpen(true)}
+        />
+      )}
+
+      {pageState.currentPage === 'login' && (
+        <Login 
+          onNavigateToSignup={() => navigateToSignup()}
+          onNavigateHome={navigateToHome}
+          onLoginSuccess={handleLoginSuccess}
+        />
+      )}
+
+      {pageState.currentPage === 'signup' && (
+        <Signup 
+          onNavigateToLogin={navigateToLogin}
+          onNavigateHome={navigateToHome}
+          onSignupSuccess={handleSignupSuccess}
+          partnerInviteCode={pageState.partnerInviteCode}
+        />
+      )}
+
+      {pageState.currentPage === 'email-verification' && (
+        <EmailVerification 
+          email={pageState.userEmail}
+          onVerified={handleEmailVerified}
+        />
+      )}
+
+      {pageState.currentPage === 'email-verification-result' && (
+        <EmailVerificationResult 
+          verificationToken={pageState.verificationToken || ''}
+          verificationStatus={pageState.verificationStatus || 'pending'}
+          verificationMessage={pageState.verificationMessage}
+          onVerificationComplete={(success) => {
+            if (success) {
+              setPageState(prev => ({ ...prev, currentPage: 'home' }));
+            } else {
+              setPageState(prev => ({ ...prev, currentPage: 'login' }));
+            }
+          }}
+        />
+      )}
+
+      {pageState.currentPage === 'accept-invitation' && (
+        <AcceptInvitation 
+          invitationToken={pageState.invitationToken || ''}
+          onNavigateToSignup={() => {
+            // Pass the invitation token to signup so they can be linked to their partner
+            setPageState(prev => ({ 
+              ...prev, 
+              currentPage: 'signup',
+              partnerInviteCode: pageState.invitationToken
+            }));
+          }}
+          onNavigateToLogin={() => {
+            // Pass the invitation token to login so it can be accepted after auth
+            setPageState(prev => ({ 
+              ...prev, 
+              currentPage: 'login',
+              partnerInviteCode: pageState.invitationToken
+            }));
+          }}
+        />
+      )}
+
+      {pageState.currentPage === 'partner-invitation' && (
+        <PartnerInvitation 
+          userName={pageState.userName}
+          onInvitationSent={handleInvitationSent}
+        />
+      )}
+
+      {pageState.currentPage === 'dashboard' && (
+        <Dashboard 
+          userName={pageState.userName}
+          userEmail={pageState.userEmail}
+          hasPartner={pageState.hasPartner}
+          partnerName={pageState.partnerName}
+          onNavigateToInsights={navigateToInsights}
+          onNavigateToCounselors={() => setPageState(prev => ({ ...prev, currentPage: 'counselors-marketplace' }))}
+          onNavigateToMarketplace={() => setPageState(prev => ({ ...prev, currentPage: 'counselors-marketplace' }))}
+          onNavigateToMaterials={(category?: string) => setPageState(prev => ({ 
+            ...prev, 
+            currentPage: 'recommended-materials',
+            selectedCategory: category
+          }))}
+          onNavigateToCompatibilityTest={navigateToCompatibilityTest}
+          onNavigateToNotifications={navigateToNotifications}
+          onNavigateToAccount={navigateToAccount}
+          onNavigateToHelp={navigateToHelp}
+          onLogout={handleLogout}
+          onNavigateToAssessment={navigateToAssessment}
+        />
+      )}
+
+      {pageState.currentPage === 'counselors' && (
+        <Counselors 
+          onNavigateHome={navigateToHome}
+          onNavigateToLogin={navigateToLogin}
+          onNavigateToSignup={() => navigateToSignup()}
+          onNavigateToInsights={navigateToInsights}
+          onNavigateToCounselors={navigateToCounselors}
+          onNavigateToProfile={navigateToProfile}
+          onNavigateToApplication={navigateToApplication}
+        />
+      )}
+
+      {pageState.currentPage === 'insights' && (
+        <Insights 
+          onNavigateHome={navigateToHome}
+          onNavigateToLogin={navigateToLogin}
+          onNavigateToSignup={() => navigateToSignup()}
+          onNavigateToCounselors={navigateToCounselors}
+          onNavigateToBlogPost={navigateToBlogPost}
+        />
+      )}
+
+      {pageState.currentPage === 'counselor-profile' && pageState.selectedCounselorId && (
+        <CounselorProfile 
+          counselorId={pageState.selectedCounselorId}
+          isAuthenticated={isAuthenticated}
+          onNavigateBack={navigateToCounselors}
+          onNavigateToBooking={navigateToBooking}
+          onNavigateToAuth={navigateToAuth}
+        />
+      )}
+
+      {pageState.currentPage === 'booking' && pageState.selectedCounselorId && (
+        <BookingPage 
+          counselorId={pageState.selectedCounselorId}
+          counselorName={pageState.selectedCounselorName}
+          onNavigateBack={() => navigateToProfile(pageState.selectedCounselorId!)}
+          onNavigateToPayment={navigateToPayment}
+        />
+      )}
+
+      {pageState.currentPage === 'counselor-application' && (
+        <CounselorApplication 
+          onNavigateBack={navigateToCounselors}
+          onApplicationSuccess={navigateToCounselorLogin}
+        />
+      )}
+
+      {pageState.currentPage === 'counselor-login' && (
+        <CounselorLoginPage 
+          onLogin={navigateToCounselorDashboard}
+          onApplyClick={navigateToApplication}
+        />
+      )}
+
+      {pageState.currentPage === 'counselor-dashboard' && (
+        <CounselorDashboard />
+      )}
+
+      {pageState.currentPage === 'blog-post' && pageState.selectedBlogPostId && (
+        <BlogPost 
+          postId={pageState.selectedBlogPostId}
+          onNavigateHome={navigateToHome}
+          onNavigateToLogin={navigateToLogin}
+          onNavigateToSignup={() => navigateToSignup()}
+          onNavigateToCounselors={navigateToCounselors}
+          onNavigateToInsights={navigateToInsights}
+        />
+      )}
+
+      {pageState.currentPage === 'material-view' && pageState.selectedMaterialId && (
+        <MaterialView 
+          materialId={pageState.selectedMaterialId}
+          onNavigateBack={() => setPageState(prev => ({ ...prev, currentPage: 'recommended-materials' }))}
+        />
+      )}
+
+      {pageState.currentPage === 'counselors-marketplace' && (
+        <CounselorsMarketplace 
+          onNavigateToProfile={navigateToProfile}
+          onNavigateBack={navigateToDashboard}
+        />
+      )}
+
+      {pageState.currentPage === 'recommended-materials' && (
+        <RecommendedMaterials 
+          onNavigateToMaterial={navigateToMaterialView}
+          onNavigateBack={navigateToDashboard}
+          categoryFilter={pageState.selectedCategory}
+        />
+      )}
+
+      {pageState.currentPage === 'compatibility-test' && (
+        <CompatibilityTest 
+          currentPage={pageState.currentPage}
+          onNavigateToDashboard={navigateToDashboard}
+          onNavigateToMaterials={(category?: string) => setPageState(prev => ({ 
+            ...prev, 
+            currentPage: 'recommended-materials',
+            selectedCategory: category
+          }))}
+          onNavigateToCompatibilityTest={navigateToCompatibilityTest}
+          onNavigateToNotifications={navigateToNotifications}
+          onNavigateToAccount={navigateToAccount}
+          onNavigateToHelp={navigateToHelp}
+          onLogout={handleLogout}
+          onNavigateToAssessment={navigateToAssessment}
+        />
+      )}
+
+      {pageState.currentPage === 'notifications' && (
+        <Notifications 
+          currentPage={pageState.currentPage}
+          onNavigateToDashboard={navigateToDashboard}
+          onNavigateToMaterials={() => setPageState(prev => ({ 
+            ...prev, 
+            currentPage: 'recommended-materials',
+            selectedCategory: undefined
+          }))}
+          onNavigateToCompatibilityTest={navigateToCompatibilityTest}
+          onNavigateToNotifications={navigateToNotifications}
+          onNavigateToAccount={navigateToAccount}
+          onNavigateToHelp={navigateToHelp}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {pageState.currentPage === 'account' && (
+        <Account 
+          userName={pageState.userName}
+          userEmail={pageState.userEmail}
+          currentPage={pageState.currentPage}
+          onNavigateToDashboard={navigateToDashboard}
+          onNavigateToMaterials={() => setPageState(prev => ({ 
+            ...prev, 
+            currentPage: 'recommended-materials',
+            selectedCategory: undefined
+          }))}
+          onNavigateToCompatibilityTest={navigateToCompatibilityTest}
+          onNavigateToNotifications={navigateToNotifications}
+          onNavigateToAccount={navigateToAccount}
+          onNavigateToHelp={navigateToHelp}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {pageState.currentPage === 'help' && (
+        <Help 
+          userName={pageState.userName}
+          userEmail={pageState.userEmail}
+          onNavigateBack={navigateToDashboard}
+        />
+      )}
+
+      {pageState.currentPage === 'assessment' && (
+        <Assessment 
+          categoryId={pageState.selectedAssessmentId!}
+          categoryName={pageState.selectedAssessmentCategory!}
+          categoryColor={pageState.selectedAssessmentColor!}
+          partnerCompleted={pageState.selectedAssessmentPartnerCompleted || false}
+          onNavigateBack={navigateToDashboard}
+          onNavigateToDashboard={navigateToDashboard}
+          onNavigateToCompatibilityTest={navigateToCompatibilityTest}
+        />
+      )}
+
+      {pageState.currentPage === 'payment' && pageState.bookingData && (
+        <Payment 
+          counselorName={pageState.selectedCounselorName}
+          appointmentType={pageState.bookingData.appointmentType}
+          sessionType={pageState.bookingData.sessionType}
+          sessionDuration={pageState.bookingData.sessionDuration}
+          preferredDate={pageState.bookingData.preferredDate}
+          preferredTime={pageState.bookingData.preferredTime}
+          onNavigateBack={() => setPageState(prev => ({ ...prev, currentPage: 'booking' }))}
+          onPaymentComplete={navigateToDashboard}
+        />
+      )}
+
+      <DemoModal isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
+    </div>
+  );
+}

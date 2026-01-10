@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, BookOpen, FileText, Bell, User, HelpCircle, LogOut, CheckCircle, Calendar, HeartHandshake, Library, ArrowRight, Clock, X, AlertCircle, Video, Loader2 } from 'lucide-react';
+import { fetchWithRetry, executeBatched, delay } from '../utils/apiHelper';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://3.107.197.17/api';
 
@@ -141,7 +142,7 @@ export function Dashboard() {
     const token = getAuthToken();
     if (!token) return null;
     
-    const response = await fetch(`${API_BASE_URL}/auth/me/`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/auth/me/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -157,7 +158,7 @@ export function Dashboard() {
     const token = getAuthToken();
     if (!token) return null;
     
-    const response = await fetch(`${API_BASE_URL}/couples/info/`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/couples/info/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -175,7 +176,7 @@ export function Dashboard() {
     if (!token) return null;
     
     try {
-      const response = await fetch(`${API_BASE_URL}/couples/invitation-status/`, {
+      const response = await fetchWithRetry(`${API_BASE_URL}/couples/invitation-status/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -195,7 +196,7 @@ export function Dashboard() {
     const token = getAuthToken();
     if (!token) return [];
     
-    const response = await fetch(`${API_BASE_URL}/assessments/categories/`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/assessments/categories/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -213,65 +214,66 @@ export function Dashboard() {
     
     const results: CoupleResult[] = [];
     
-    // Fetch results and partner status for each category
-    await Promise.all(
-      categoryList.map(async (cat) => {
-        try {
-          // Fetch partner status
-          const statusResponse = await fetch(`${API_BASE_URL}/assessments/partner-status/${cat.id}/`, {
+    // Use batched execution to avoid rate limiting
+    const categoryTasks = categoryList.map((cat) => async () => {
+      try {
+        // Fetch partner status
+        const statusResponse = await fetchWithRetry(`${API_BASE_URL}/assessments/partner-status/${cat.id}/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        let partnerStatus: PartnerStatusResponse | null = null;
+        if (statusResponse.ok) {
+          partnerStatus = await statusResponse.json();
+        }
+        
+        // Check if both partners have completed - use both_complete OR check both is_complete flags
+        const bothComplete = partnerStatus?.both_complete || 
+          (partnerStatus?.user_status?.is_complete && partnerStatus?.partner_status?.is_complete);
+        
+        // If both complete, fetch the couple result
+        let coupleResult = null;
+        if (bothComplete) {
+          const resultResponse = await fetchWithRetry(`${API_BASE_URL}/assessments/couple-results/${cat.id}/`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
           });
           
-          let partnerStatus: PartnerStatusResponse | null = null;
-          if (statusResponse.ok) {
-            partnerStatus = await statusResponse.json();
+          if (resultResponse.ok) {
+            coupleResult = await resultResponse.json();
           }
-          
-          // Check if both partners have completed - use both_complete OR check both is_complete flags
-          const bothComplete = partnerStatus?.both_complete || 
-            (partnerStatus?.user_status?.is_complete && partnerStatus?.partner_status?.is_complete);
-          
-          // If both complete, fetch the couple result
-          let coupleResult = null;
-          if (bothComplete) {
-            const resultResponse = await fetch(`${API_BASE_URL}/assessments/couple-results/${cat.id}/`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-            });
-            
-            if (resultResponse.ok) {
-              coupleResult = await resultResponse.json();
-            }
-          }
-          
-          results.push({
-            category: cat.id,
-            score: coupleResult?.result?.score ?? null,
-            compatibility_score: coupleResult?.result?.compatibility_score ?? null,
-            user_completed: partnerStatus?.user_status?.is_complete ?? cat.is_complete,
-            partner_completed: partnerStatus?.partner_status?.is_complete ?? false,
-            both_complete: bothComplete ?? false,
-            attempt_count: coupleResult?.attempt ?? (cat.progress > 0 ? 1 : 0),
-          });
-        } catch (err) {
-          console.error(`Error fetching result for ${cat.id}:`, err);
-          results.push({
-            category: cat.id,
-            score: null,
-            compatibility_score: null,
-            user_completed: cat.is_complete,
-            partner_completed: false,
-            both_complete: false,
-            attempt_count: 0,
-          });
         }
-      })
-    );
+        
+        results.push({
+          category: cat.id,
+          score: coupleResult?.result?.score ?? null,
+          compatibility_score: coupleResult?.result?.compatibility_score ?? null,
+          user_completed: partnerStatus?.user_status?.is_complete ?? cat.is_complete,
+          partner_completed: partnerStatus?.partner_status?.is_complete ?? false,
+          both_complete: bothComplete ?? false,
+          attempt_count: coupleResult?.attempt ?? (cat.progress > 0 ? 1 : 0),
+        });
+      } catch (err) {
+        console.error(`Error fetching result for ${cat.id}:`, err);
+        results.push({
+          category: cat.id,
+          score: null,
+          compatibility_score: null,
+          user_completed: cat.is_complete,
+          partner_completed: false,
+          both_complete: false,
+          attempt_count: 0,
+        });
+      }
+    });
+    
+    // Execute in batches of 2 with 1 second delay between batches to avoid rate limiting
+    await executeBatched(categoryTasks, 2, 1000);
     
     return results;
   };
@@ -281,7 +283,7 @@ export function Dashboard() {
     const token = getAuthToken();
     if (!token) return [];
     
-    const response = await fetch(`${API_BASE_URL}/appointments/couple-appointments/`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/appointments/user-appointments/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -307,7 +309,7 @@ export function Dashboard() {
     }
     
     try {
-      const response = await fetch(`${API_BASE_URL}/couples/invite/`, {
+      const response = await fetchWithRetry(`${API_BASE_URL}/couples/invite/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -337,14 +339,26 @@ export function Dashboard() {
       setError(null);
       
       try {
-        // First fetch basic data
-        const [user, couple, invitation, cats, appts] = await Promise.all([
-          fetchUserData(),
-          fetchCoupleInfo(),
-          fetchInvitationStatus(),
-          fetchCategories(),
-          fetchAppointments(),
-        ]);
+        // Batch API calls to avoid rate limiting
+        // First batch: critical user data only
+        await delay(200); // Small initial delay
+        const user = await fetchUserData();
+        
+        // Second batch: couple info with delay
+        await delay(1500);
+        const couple = await fetchCoupleInfo();
+        
+        // Third batch: invitation with delay
+        await delay(1500);
+        const invitation = await fetchInvitationStatus();
+        
+        // Fourth batch: categories with delay
+        await delay(1500);
+        const cats = await fetchCategories();
+        
+        // Fifth batch: appointments with delay
+        await delay(1500);
+        const appts = await fetchAppointments();
         
         // Then fetch couple results with category data
         const results = await fetchCoupleResults(cats || []);

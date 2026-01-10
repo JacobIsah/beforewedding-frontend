@@ -7,7 +7,7 @@ interface FetchOptions extends RequestInit {
 
 // Global request queue to ensure minimum time between API calls
 let lastRequestTime = 0;
-const MIN_REQUEST_INTERVAL = 3000; // 3 seconds minimum between requests
+const MIN_REQUEST_INTERVAL = 500; // 500ms minimum between requests
 
 /**
  * Wait for minimum interval before making next request

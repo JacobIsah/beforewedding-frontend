@@ -1,18 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { AssessmentCompletionModal } from '../components/AssessmentCompletionModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://beforewedding.duckdns.org/api';
-
-interface AssessmentProps {
-  categoryId: string;
-  categoryName: string;
-  categoryColor: string;
-  partnerCompleted: boolean;
-  onNavigateBack: () => void;
-  onNavigateToDashboard: () => void;
-  onNavigateToCompatibilityTest: () => void;
-}
 
 interface Question {
   id: string;
@@ -36,15 +27,10 @@ interface QuestionResponse {
   previous_answer: string | null;
 }
 
-export function Assessment({ 
-  categoryId,
-  categoryName, 
-  categoryColor, 
-  partnerCompleted, 
-  onNavigateBack, 
-  onNavigateToDashboard, 
-  onNavigateToCompatibilityTest 
-}: AssessmentProps) {
+export function Assessment() {
+  const { categoryId } = useParams<{ categoryId: string }>();
+  const navigate = useNavigate();
+  
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
@@ -315,7 +301,7 @@ export function Assessment({
           <p className="text-gray-900 text-lg mb-4">{error}</p>
           <div className="flex gap-3 justify-center">
             <button 
-              onClick={onNavigateBack}
+              onClick={() => navigate(-1)}
               className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
             >
               Go Back
@@ -343,7 +329,7 @@ export function Assessment({
           <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
           <p className="text-gray-600">No questions available for this category.</p>
           <button 
-            onClick={onNavigateBack}
+            onClick={() => navigate(-1)}
             className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Go Back
@@ -358,7 +344,7 @@ export function Assessment({
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <button
-            onClick={onNavigateBack}
+            onClick={() => navigate(-1)}
             className="text-blue-100 hover:text-white mb-4 flex items-center gap-2 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -388,7 +374,7 @@ export function Assessment({
             {/* Question */}
             <div className="mb-8">
               <div className="flex items-start gap-4 mb-6">
-                <div className={`w-12 h-12 ${categoryColor} rounded-full flex items-center justify-center text-white flex-shrink-0`}>
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
                   {currentIndex + 1}
                 </div>
                 <div className="flex-1">
@@ -551,10 +537,10 @@ export function Assessment({
       {/* Completion Modal */}
       {showCompletionModal && (
         <AssessmentCompletionModal 
-          categoryName={categoryName}
-          partnerCompleted={partnerCompleted}
-          onNavigateToDashboard={onNavigateToDashboard}
-          onNavigateToCompatibilityTest={onNavigateToCompatibilityTest}
+          categoryName={currentQuestion?.category || 'Assessment'}
+          partnerCompleted={false}
+          onNavigateToDashboard={() => navigate('/dashboard')}
+          onNavigateToCompatibilityTest={() => navigate('/compatibility-test')}
         />
       )}
     </div>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, BookOpen, FileText, Bell, User, HelpCircle, LogOut, CheckCircle, Calendar, HeartHandshake, Library, ArrowRight, Clock, X, AlertCircle, Video, Loader2 } from 'lucide-react';
 import { fetchWithRetry, executeBatched, delay } from '../utils/apiHelper';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://3.107.197.17/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://beforewedding.duckdns.org/api';
 
 // API Response Types
 interface UserProfile {

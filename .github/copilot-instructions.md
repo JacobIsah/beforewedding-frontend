@@ -144,13 +144,13 @@ const upcomingAppointments = [
 ### API Integration
 **Backend Deployment:**
 - **Development**: `http://localhost:8000` (local backend)
-- **Production**: `https://3.107.197.17/api` (AWS deployed)
+- **Production**: `https://beforewedding.duckdns.orgapi` (AWS deployed)
 
 Backend URL resolution from env: `import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'`
 
 To connect to deployed backend, set environment variable:
 ```bash
-VITE_API_BASE_URL=https://3.107.197.17/api npm run dev
+VITE_API_BASE_URL=https://beforewedding.duckdns.org/api npm run dev
 ```
 
 **Authentication Token Management:**

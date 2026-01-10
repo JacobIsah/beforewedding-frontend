@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, CheckCircle2, Clock, AlertCircle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const API_BASE_URL = 'https://3.107.197.17';
+const API_BASE_URL = 'https://beforewedding.duckdns.org';
 
 interface Couple {
   id: number;

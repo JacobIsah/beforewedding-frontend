@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Clock, CheckCircle, Loader2 } from 'lucide-react';
 
-const API_BASE_URL = 'https://3.107.197.17';
+const API_BASE_URL = 'https://beforewedding.duckdns.org';
 
 interface TimeSlot {
   time: string;

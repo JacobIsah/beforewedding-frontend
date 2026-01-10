@@ -3,7 +3,7 @@ import { Heart, ClipboardCheck, UserCheck, DollarSign, AlertCircle, CheckCircle2
 import { StatCard } from './StatCard';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const API_BASE_URL = 'https://3.107.197.17';
+const API_BASE_URL = 'https://beforewedding.duckdns.org';
 
 interface OverviewStats {
   total_users: number;

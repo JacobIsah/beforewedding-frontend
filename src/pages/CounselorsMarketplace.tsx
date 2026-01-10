@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Star, MapPin, Calendar, Award, DollarSign, X, ChevronDown, Loader2, AlertCircle } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://3.107.197.17/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://beforewedding.duckdns.org/api';
 
 // API Response Types
 interface ApiCounselor {

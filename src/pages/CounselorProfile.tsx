@@ -60,7 +60,7 @@ export function CounselorProfile() {
     const fetchCounselorData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`https://3.107.197.17/api/counselors/${id}/`);
+        const response = await fetch(`https://beforewedding.duckdns.org/api/counselors/${id}/`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch counselor data');

@@ -35,7 +35,7 @@ export default function CounselorDashboard() {
           setLoading(false);
           return;
         }
-        const response = await fetch('https://3.107.197.17/api/counselors/dashboard/', {
+        const response = await fetch('https://beforewedding.duckdns.org/api/counselors/dashboard/', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',

@@ -113,7 +113,7 @@ export function Signup() {
         agreeToMarketing: formData.agreeToMarketing,
       };
 
-      const response = await fetch('https://3.107.197.17/api/auth/register/', {
+      const response = await fetch('https://beforewedding.duckdns.org/api/auth/register/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

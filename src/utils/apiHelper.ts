@@ -5,6 +5,26 @@ interface FetchOptions extends RequestInit {
   retryDelay?: number;
 }
 
+// Global request queue to ensure minimum time between API calls
+let lastRequestTime = 0;
+const MIN_REQUEST_INTERVAL = 3000; // 3 seconds minimum between requests
+
+/**
+ * Wait for minimum interval before making next request
+ */
+async function waitForRateLimit(): Promise<void> {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+  
+  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+    const waitTime = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
+    console.log(`Rate limit: waiting ${waitTime}ms before next request`);
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+  }
+  
+  lastRequestTime = Date.now();
+}
+
 /**
  * Fetch with automatic retry and exponential backoff for rate limits
  */
@@ -14,6 +34,9 @@ export async function fetchWithRetry(
   attempt = 1
 ): Promise<Response> {
   const { retries = 3, retryDelay = 1000, ...fetchOptions } = options;
+  
+  // Wait for rate limit before making request
+  await waitForRateLimit();
 
   try {
     const response = await fetch(url, fetchOptions);

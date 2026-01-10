@@ -344,7 +344,10 @@ export function Dashboard() {
       try {
         // Batch API calls to avoid rate limiting
         // Use longer delays to respect backend rate limit window
-        await delay(500); // Initial delay
+        // CRITICAL: Wait 5 seconds initially to ensure previous page's API calls cleared the rate limit
+        console.log('Dashboard: Waiting 5s before first API call to avoid rate limit...');
+        await delay(5000); // 5 second initial delay to clear rate limit window
+        console.log('Dashboard: Starting API calls...');
         const user = await fetchUserData();
         
         // Increase delays to 2500ms to stay well under rate limits

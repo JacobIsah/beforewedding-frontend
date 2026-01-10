@@ -18,13 +18,11 @@ export async function fetchWithRetry(
   try {
     const response = await fetch(url, fetchOptions);
 
-    // If rate limited (429), retry with exponential backoff
-    if (response.status === 429 && attempt <= retries) {
-      const delay = retryDelay * Math.pow(2, attempt - 1); // Exponential backoff
-      console.warn(`Rate limited. Retrying in ${delay}ms... (Attempt ${attempt}/${retries})`);
-      
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return fetchWithRetry(url, options, attempt + 1);
+    // For rate limits (429), don't retry - the window hasn't reset yet
+    // Just return the error so caller knows to slow down
+    if (response.status === 429) {
+      console.error(`Rate limited on ${url}. Backend needs more time between requests.`);
+      return response; // Return 429 without retry
     }
 
     return response;

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Loader2, Heart } from 'lucide-react';
 
-const API_BASE_URL = 'https://3.107.197.17';
+const API_BASE_URL = 'https://3.107.197.17/';
 
 export function EmailVerificationResult() {
   const [searchParams] = useSearchParams();

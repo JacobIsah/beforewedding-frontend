@@ -214,8 +214,10 @@ export function Dashboard() {
     
     const results: CoupleResult[] = [];
     
-    // Use batched execution to avoid rate limiting
+    // Process categories one at a time with delays to avoid rate limiting
     const categoryTasks = categoryList.map((cat) => async () => {
+      // Add delay between each category to respect rate limits
+      await delay(2000);
       try {
         // Fetch partner status
         const statusResponse = await fetchWithRetry(`${API_BASE_URL}/assessments/partner-status/${cat.id}/`, {
@@ -272,8 +274,9 @@ export function Dashboard() {
       }
     });
     
-    // Execute in batches of 2 with 1 second delay between batches to avoid rate limiting
-    await executeBatched(categoryTasks, 2, 1000);
+    // Execute categories one at a time (batch size 1) with 2s delays to respect rate limits
+    // Each category already has a 2s delay built in, so this ensures sequential processing
+    await executeBatched(categoryTasks, 1, 2000);
     
     return results;
   };
@@ -340,24 +343,21 @@ export function Dashboard() {
       
       try {
         // Batch API calls to avoid rate limiting
-        // First batch: critical user data only
-        await delay(200); // Small initial delay
+        // Use longer delays to respect backend rate limit window
+        await delay(500); // Initial delay
         const user = await fetchUserData();
         
-        // Second batch: couple info with delay
-        await delay(1500);
+        // Increase delays to 2500ms to stay well under rate limits
+        await delay(2500);
         const couple = await fetchCoupleInfo();
         
-        // Third batch: invitation with delay
-        await delay(1500);
+        await delay(2500);
         const invitation = await fetchInvitationStatus();
         
-        // Fourth batch: categories with delay
-        await delay(1500);
+        await delay(2500);
         const cats = await fetchCategories();
         
-        // Fifth batch: appointments with delay
-        await delay(1500);
+        await delay(2500);
         const appts = await fetchAppointments();
         
         // Then fetch couple results with category data

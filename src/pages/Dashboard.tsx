@@ -286,7 +286,7 @@ export function Dashboard() {
     const token = getAuthToken();
     if (!token) return [];
     
-    const response = await fetchWithRetry(`${API_BASE_URL}/appointments/user-appointments/`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/appointments/couple-appointments/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',

@@ -350,7 +350,7 @@ export function Assessment() {
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </button>
-          <h1 className="text-3xl mb-2">{categoryName}</h1>
+          <h1 className="text-3xl mb-2">{currentQuestion?.category || 'Assessment'}</h1>
           <p className="text-blue-100">Question {currentIndex + 1} of {totalQuestions}</p>
         </div>
       </div>
@@ -495,7 +495,7 @@ export function Assessment() {
             {/* Navigation Buttons */}
             <div className="flex items-center justify-between pt-8 border-t border-gray-200">
               <button
-                onClick={onNavigateBack}
+                onClick={() => navigate(-1)}
                 disabled={submitting}
                 className="px-6 py-3 rounded-lg flex items-center gap-2 transition-colors text-blue-600 hover:bg-blue-50 disabled:opacity-50"
               >

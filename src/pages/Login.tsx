@@ -1,9 +1,13 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Heart, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://beforewedding.duckdns.org/api';
 
 export function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get('invite');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -26,7 +30,7 @@ export function Login() {
     setError(null);
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://beforewedding.duckdns.org/api'}/auth/login/`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,6 +59,33 @@ export function Login() {
       if (data.access_token && data.refresh_token) {
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
+      }
+
+      // If there's an invite token, accept the invitation
+      // Check both URL param and localStorage (for post-signup flow)
+      const tokenToUse = inviteToken || localStorage.getItem('pending_invite_token');
+      if (tokenToUse && data.access_token) {
+        try {
+          const acceptResponse = await fetch(`${API_BASE_URL}/couples/accept-invitation/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${data.access_token}`,
+            },
+            body: JSON.stringify({ token: tokenToUse, accept: true }),
+          });
+          
+          const acceptData = await acceptResponse.json();
+          if (acceptResponse.ok) {
+            console.log('Invitation accepted:', acceptData);
+            // Clear the stored token after successful acceptance
+            localStorage.removeItem('pending_invite_token');
+          } else {
+            console.error('Failed to accept invitation:', acceptData);
+          }
+        } catch (inviteErr) {
+          console.error('Error accepting invitation:', inviteErr);
+        }
       }
 
       setLoading(false);

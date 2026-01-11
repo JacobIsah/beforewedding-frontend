@@ -143,10 +143,8 @@ export function Signup() {
 
   useEffect(() => {
     if (partnerInviteCode) {
-      setFormData(prev => ({
-        ...prev,
-        partnerEmail: partnerInviteCode
-      }));
+      // Store the invite token in localStorage so it can be used after email verification
+      localStorage.setItem('pending_invite_token', partnerInviteCode);
     }
   }, [partnerInviteCode]);
 

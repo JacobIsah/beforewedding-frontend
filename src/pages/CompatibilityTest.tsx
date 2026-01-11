@@ -1,20 +1,11 @@
 import { FileText, Library, AlertCircle, CheckCircle, Clock, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ViewResultModal } from '../components/ViewResultModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://beforewedding.duckdns.org/api';
 
-interface CompatibilityTestProps {
-  currentPage: string;
-  onNavigateToDashboard: () => void;
-  onNavigateToMaterials: (category?: string) => void;
-  onNavigateToCompatibilityTest: () => void;
-  onNavigateToNotifications: () => void;
-  onNavigateToAccount: () => void;
-  onNavigateToHelp: () => void;
-  onLogout: () => void;
-  onNavigateToAssessment: (categoryId: string, category: string, color: string, partnerCompleted: boolean) => void;
-}
+// Props interface removed - component now uses React Router hooks
 
 // API Response Types
 interface CategoryApiResponse {
@@ -98,7 +89,8 @@ const categoryColorMap: Record<string, string> = {
   'social': 'bg-cyan-500',
 };
 
-export function CompatibilityTest({ currentPage, onNavigateToDashboard, onNavigateToMaterials, onNavigateToCompatibilityTest, onNavigateToNotifications, onNavigateToAccount, onNavigateToHelp, onLogout, onNavigateToAssessment }: CompatibilityTestProps) {
+export function CompatibilityTest() {
+  const navigate = useNavigate();
   const [assessmentCategories, setAssessmentCategories] = useState<AssessmentCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -215,12 +207,12 @@ export function CompatibilityTest({ currentPage, onNavigateToDashboard, onNaviga
   const totalAttempts = assessmentCategories.reduce((sum, cat) => sum + cat.attempts, 0);
   const completedTopics = assessmentCategories.filter(c => c.score !== null).length;
 
-  const handleTakeAssessment = (categoryId: string, categoryName: string, categoryColor: string, partnerCompleted: boolean) => {
-    onNavigateToAssessment(categoryId, categoryName, categoryColor, partnerCompleted);
+  const handleTakeAssessment = (categoryId: string) => {
+    navigate(`/assessment/${categoryId}`);
   };
 
   const handleViewMaterials = (categoryName: string) => {
-    onNavigateToMaterials(categoryName);
+    navigate(`/materials?category=${encodeURIComponent(categoryName)}`);
   };
 
   const handleViewResult = async (category: AssessmentCategory) => {
@@ -281,7 +273,7 @@ export function CompatibilityTest({ currentPage, onNavigateToDashboard, onNaviga
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <button
-            onClick={onNavigateToDashboard}
+            onClick={() => navigate('/dashboard')}
             className="text-blue-100 hover:text-white mb-4 flex items-center gap-2"
           >
             ← Back to Dashboard
@@ -418,7 +410,7 @@ export function CompatibilityTest({ currentPage, onNavigateToDashboard, onNaviga
                 {/* Action Buttons */}
                 <div className="flex lg:flex-col gap-3 lg:w-48">
                   <button
-                    onClick={() => handleTakeAssessment(category.id, category.name, category.color, category.partnerCompleted)}
+                    onClick={() => handleTakeAssessment(category.id)}
                     className="flex-1 lg:flex-none px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm"
                   >
                     <FileText className="w-4 h-4" />

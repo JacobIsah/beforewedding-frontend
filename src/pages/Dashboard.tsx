@@ -280,21 +280,25 @@ export function Dashboard() {
     return results;
   };
 
-  // Fetch appointments
+  // Fetch appointments (user's bookings)
   const fetchAppointments = async () => {
     const token = getAuthToken();
     if (!token) return [];
     
-    const response = await fetchWithRetry(`${API_BASE_URL}/appointments/couple-appointments/`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    const data = await response.json();
-    if (data.error) return [];
-    return Array.isArray(data) ? data : [];
+    try {
+      const response = await fetchWithRetry(`${API_BASE_URL}/appointments/couple-appointments/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) return [];
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch {
+      return [];
+    }
   };
 
   // Send/Resend partner invitation

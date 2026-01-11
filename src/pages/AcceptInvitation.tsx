@@ -1,9 +1,10 @@
 import { Heart, UserPlus, LogIn, Users } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export function AcceptInvitation() {
   const navigate = useNavigate();
-  const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token') || '';
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-amber-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
@@ -36,14 +37,14 @@ export function AcceptInvitation() {
             
             <div className="space-y-3">
               <button
-                onClick={() => navigate(`/signup?invite=${token || ''}`)}
+                onClick={() => navigate(`/signup?invite=${token}`)}
                 className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
               >
                 <UserPlus className="w-5 h-5" />
                 Create Account
               </button>
               <button
-                onClick={() => navigate(`/login?invite=${token || ''}`)}
+                onClick={() => navigate(`/login?invite=${token}`)}
                 className="w-full px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
               >
                 <LogIn className="w-5 h-5" />
